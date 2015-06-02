@@ -61,29 +61,28 @@ func (c *command) RawExecute() (*http.Response, error) {
 	req.Body.Close()
 
 	if c.verbose {
-		b, err := httputil.DumpRequest(req, true)
-
-		if err != nil {
-			return nil, errors.New(fmt.Sprintf("Could not dump request got error %s", err))
-		} else {
-			fmt.Print(string(b))
-		}
-
-		b, err = httputil.DumpResponse(res, true)
-		if err != nil {
-			return nil, errors.New(fmt.Sprintf("Could not dump response got error %s", err))
-		} else {
-			fmt.Print(string(b))
-		}
+		dumpRequestAndResponse(req, res)
 	}
 
 	// Check the response
 	if res.StatusCode != http.StatusOK {
-		err = fmt.Errorf("bad status: %s", res.Status)
-		return nil, err
+		return nil, fmt.Errorf("expected status 200 got: %s", res.Status)
 	}
 
 	return res, nil
+}
+
+func dumpRequestAndResponse(req *http.Request, res *http.Response) {
+	b, err := httputil.DumpRequest(req, true)
+
+	if err == nil {
+		fmt.Print(string(b))
+	}
+
+	b, err = httputil.DumpResponse(res, true)
+	if err == nil {
+		fmt.Print(string(b))
+	}
 }
 
 func (c *command) Execute(x interface{}) error {
@@ -99,7 +98,7 @@ func (c *command) Execute(x interface{}) error {
 
 	if err != nil { // check if we received an api-error
 		var apiErr ApiError
-		if err = decoder.Decode(&apiErr); err == nil {
+		if err = decoder.Decode(&apiErr); err == nil && apiErr.Errors == true {
 			return errors.New("API:" + apiErr.Message)
 		}
 	}
