@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"mime/multipart"
 	"net/http"
 	"net/http/httputil"
@@ -91,17 +92,21 @@ func (c *command) Execute(x interface{}) error {
 		return err
 	}
 
-	defer resp.Body.Close()
+	// Copy the response body in buffer to re-read the contents
+	buff := &bytes.Buffer{}
+	io.Copy(buff, resp.Body)
+	resp.Body.Close()
 
-	decoder := json.NewDecoder(resp.Body)
-	err = decoder.Decode(x)
+	// check for error first, this will remove the need for error handling
+	// in custom response types(for now only Payment but this could be used
+	// for Sales etc..)
+	var apiErr apiError
 
-	if err != nil { // check if we received an api-error
-		var apiErr ApiError
-		if err = decoder.Decode(&apiErr); err == nil && apiErr.Errors == true {
-			return errors.New("API:" + apiErr.Message)
-		}
+	if err = json.Unmarshal(buff.Bytes(), &apiErr); err == nil && apiErr.Errors == true {
+		return errors.New("Error from API:" + apiErr.Message)
 	}
+
+	err = json.Unmarshal(buff.Bytes(), x)
 
 	return err
 }

@@ -1,24 +1,40 @@
+// Package payprogo provides a simple handler for binding with the
+// "https://www.paypro.nl/" payment provider.
+// A simple payment command can be executed as follows:
+//   func main() {
+//      p := payprogo.New("[[api-key]]")
+//	var paymentInfo payprogo.PaymentResponse
+//      err := p.NewCommand("create_product_payment").Set("product_id", "24611").Set("consumer_email", "mijnklant@mailadres.nl").Execute(&paymentInfo)
+//	if err == nil {
+//          log.Printf("%v", paymentInfo)
+//      }
+//   }
 package payprogo
 
-func New(key string) *payPro {
-	return &payPro{
+// New returns a *PayPro struct which can be used to execute commands
+func New(key string) *PayPro {
+	return &PayPro{
 		key,
 		"https://www.paypro.nl/post_api/",
 		false,
 	}
 }
 
-type payPro struct {
+// PayPro Container holding authentication information and used for issuing commands
+type PayPro struct {
 	key   string
 	url   string
 	debug bool
 }
 
-func (p *payPro) Debug(d bool) {
+// Debug sets the api in debug mode. This will also dump the http.Request and
+// http.Response variables
+func (p *PayPro) Debug(d bool) {
 	p.debug = d
 }
 
-func (p *payPro) NewCommand(c string) *command {
+// NewCommand returns a new command on which you can Set parameters and Execute
+func (p *PayPro) NewCommand(c string) *command {
 	r := &command{
 		p.url,
 		c,

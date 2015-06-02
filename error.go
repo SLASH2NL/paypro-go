@@ -6,16 +6,17 @@ import (
 	"strconv"
 )
 
-type ApiError struct {
+type apiError struct {
 	Message string `json:"return"`
 	Errors  bool   `json:"errors"`
 }
 
-type StringBoolean bool
+// Avoid recursion
+type _error apiError
 
-func (e *ApiError) UnmarshalJSON(b []byte) error {
+func (e *apiError) UnmarshalJSON(b []byte) error {
 	var intermediate struct {
-		*ApiError
+		_error
 		Errors string
 	}
 
