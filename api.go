@@ -3,7 +3,7 @@
 // A simple payment command can be executed as follows:
 //   func main() {
 //      p := payprogo.New("[[api-key]]")
-//	var paymentInfo payprogo.PaymentResponse
+//	var paymentInfo payprogo.Payment
 //      err := p.NewCommand("create_product_payment").Set("product_id", "24611").Set("consumer_email", "mijnklant@mailadres.nl").Execute(&paymentInfo)
 //	if err == nil {
 //          log.Printf("%v", paymentInfo)
