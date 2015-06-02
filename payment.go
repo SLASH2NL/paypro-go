@@ -15,6 +15,7 @@ type Payment struct {
 // _payment avoids recursion while unmarshalling
 type _payment Payment
 
+// UnmarshalJSON will handle the custom unmarshalling of the payment data
 func (e *Payment) UnmarshalJSON(b []byte) error {
 	var intermediate struct {
 		_payment `json:"return"`

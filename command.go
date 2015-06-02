@@ -11,7 +11,8 @@ import (
 	"net/http/httputil"
 )
 
-type command struct {
+// Command is used to execute commands against the PayPro API
+type Command struct {
 	url        string
 	command    string
 	key        string
@@ -19,18 +20,20 @@ type command struct {
 	parameters map[string]interface{}
 }
 
-func (c *command) Set(key string, value interface{}) *command {
+// Set sets a parameter like 'consumer_email'
+func (c *Command) Set(key string, value interface{}) *Command {
 	c.parameters[key] = value
 	return c
 }
 
-func (c *command) paramsAsJSON() []byte {
+func (c *Command) paramsAsJSON() []byte {
 	b, _ := json.Marshal(c.parameters)
 	return b
 }
 
-// When using this method remember to close the response body
-func (c *command) RawExecute() (*http.Response, error) {
+// RawExecute can be used to get the raw unparsed http.Response.
+// Remember to close the response body when using this function.
+func (c *Command) RawExecute() (*http.Response, error) {
 	var postBytes bytes.Buffer
 	w := multipart.NewWriter(&postBytes)
 
@@ -86,7 +89,10 @@ func dumpRequestAndResponse(req *http.Request, res *http.Response) {
 	}
 }
 
-func (c *command) Execute(x interface{}) error {
+// Execute will transform the input the same way json.Unmarshal does.
+// It takes a pointer to a variable and will read the response json.
+// If the api returns an error this is returned as a normal go error
+func (c *Command) Execute(x interface{}) error {
 	resp, err := c.RawExecute()
 	if err != nil {
 		return err
