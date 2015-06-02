@@ -34,8 +34,8 @@ func (p *PayPro) Debug(d bool) {
 }
 
 // NewCommand returns a new command on which you can Set parameters and Execute
-func (p *PayPro) NewCommand(c string) *command {
-	r := &command{
+func (p *PayPro) NewCommand(c string) *Command {
+	r := &Command{
 		p.url,
 		c,
 		p.key,
