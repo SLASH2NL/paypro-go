@@ -17,7 +17,7 @@ type _error apiError
 func (e *apiError) UnmarshalJSON(b []byte) error {
 	var intermediate struct {
 		_error
-		Errors string
+		Errors string `json:"errors"`
 	}
 
 	err := json.Unmarshal(b, &intermediate)
