@@ -56,17 +56,23 @@ func (c *Command) RawExecute() (*http.Response, error) {
 	// set the content-type
 	req.Header.Set("Content-Type", w.FormDataContentType())
 
+	if c.verbose {
+		b, _ := httputil.DumpRequest(req, true)
+		fmt.Print(string(b) + "\n")
+	}
+
 	// Submit the request
 	client := &http.Client{}
 	res, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
-	req.Body.Close()
-
 	if c.verbose {
-		dumpRequestAndResponse(req, res)
+		b, _ := httputil.DumpResponse(res, true)
+		fmt.Print(string(b) + "\n")
 	}
+
+	req.Body.Close()
 
 	// Check the response
 	if res.StatusCode != http.StatusOK {
@@ -74,19 +80,6 @@ func (c *Command) RawExecute() (*http.Response, error) {
 	}
 
 	return res, nil
-}
-
-func dumpRequestAndResponse(req *http.Request, res *http.Response) {
-	b, err := httputil.DumpRequest(req, true)
-
-	if err == nil {
-		fmt.Print(string(b))
-	}
-
-	b, err = httputil.DumpResponse(res, true)
-	if err == nil {
-		fmt.Print(string(b))
-	}
 }
 
 // Execute will transform the input the same way json.Unmarshal does.
@@ -113,6 +106,9 @@ func (c *Command) Execute(x interface{}) error {
 	}
 
 	err = json.Unmarshal(buff.Bytes(), x)
+	if err != nil {
+		return fmt.Errorf("Execute error: %s for response:%s", err, string(buff.Bytes()))
+	}
 
-	return err
+	return nil
 }
